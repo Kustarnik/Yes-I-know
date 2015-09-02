@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf8">
+	<title>
+		Твистер
+	</title>
+	<style type="text/css">
+		#screen{
+			width: 200px;
+			height: 200px;
+			background: red;	
+		}
+		#text{
+			font-size: 20px;
+			color: #444;
+			padding-left: 20px;
+		}
+	</style>
+</head>
+<body>
+	<p id="text">Левая рука</p>
+	<div id="screen"></div>
+	<script type="text/javascript">
+		var color = ["F00", "0F0", "00F", "FF0"];
+		var	finiteness = ["Левая рука", "Правая рука", "Левая нога", "Правая нога"];
+		var scr = document.getElementById("screen");
+		var text = document.getElementById("text");
+		var indexColor = 0;
+		var indexFiniteness = 0
+		fn();
+		function fn() {
+			scr.style.background = "#" + color[ indexColor = getRandomIndex(indexColor) ];
+			text.innerHTML = finiteness[ indexFiniteness = getRandomIndex(indexFiniteness) ];
+			setTimeout(fn, 3000);
+		};
+		function getRandomIndex(index) {
+			var r = index + Math.round(2*Math.random()) + 1;
+			return r > 3 ? r - 4 : r; 
+		}
+	</script>
+</body>
+</html>

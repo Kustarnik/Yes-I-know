@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>ООН</title>
+	<script src="jquery-1.11.3.min.js"></script>
+	<script type="text/javascript">
+
+	var API = {
+		SYTE_API : "http://api.anywayanyday.com/api",
+		getJson : function (path, callback) {
+			return $.getJSON(this.SYTE_API + path + "&callback=?", callback);	
+		},
+
+		callIdSynonym : function (callback) {
+			this.getJson(
+				"/NewRequest3/?Route=2208MOWPARAD1CN0IN0SCE&_Serialize=JSON",
+				function (data) {
+					callback(data.IdSynonym, data.Error);
+				} 
+			);
+		},
+
+		callStatus : function (idSynonym, callback) {
+			this.getJson(
+				"/RequestState/?R=" + idSynonym + "&_Serialize=JSON",
+				function (data) {
+					callback(data.Completed, data.Error);
+				}
+			);
+		},
+
+		callResult : function (idSynonym, callback) {
+			this.getJson("/Fares2/?R=" + idSynonym + "&L=RU&C=RUB&Limit=200&DebugFullNames=true&_Serialize=JSON", callback);
+		}
+	};
+
+	var $doc = $(document);
+
+	/**/
+	function Model() {
+		this.idSynonym;
+		this.completed;
+		this.data;
+
+		this.update = function () {
+			var self = this;
+			API.callIdSynonym( function (id, error) {
+				
+				if (!error) {
+					self.setId(id);
+
+					( function recurs() {
+						API.callStatus(self.idSynonym, function (status, error) {
+							
+							if (!error) {
+								self.setStatus(status);
+
+								if (status == 100) {
+									API.callResult(self.idSynonym, function (data) {
+										self.setData(data);
+									} );
+								} else {
+									setTimeout(recurs, 1000);
+								};
+
+							};
+
+						} );
+					}() );
+
+				};
+
+			} )
+		}
+
+		this.setId = function (id) {
+			this.idSynonym = id;
+			this.completed = 0;
+			this.data = null;
+		}
+
+		this.setStatus = function (status) {
+			this.completed = status;
+			$doc.trigger("ch-status");
+		}
+
+		
+
+		this.setData = function (data) {
+			this.data = data;
+			$doc.trigger("ch-data");
+		}
+
+		this.getAirlines = function () {
+			var result = {};
+			var names = this.data.References.Carriers;
+			var airlines = this.data.Airlines;
+			for (var i = 0; i < airlines.length; i++) {
+				for (var j = 0; j < names.length; j++) {
+					
+					if (airlines[i].Code == names[j].Code) {
+						result[airlines[i].Code] = names[j].Name;
+						break;
+					}
+					
+				}
+			};
+
+			return result;
+		}
+	}
+
+
+	/*  */
+
+	function View(model) {
+		this.contaner = $("#container");
+		this.tabs = this.contaner.find("#tabs-item");
+
+		this.initLoader = function () {
+			var self = this;
+			var loader = this.contaner.find("#loader").html(
+				"<div class='wrap'><div class='load'></div></div>"
+			);
+			var load = loader.find(".load");
+
+			function setStatus () {
+				load.width(model.completed + "%");
+			}
+
+			function endLoad () {
+				$doc.unbind("ch-status", setStatus);
+				$doc.unbind("ch-data", endLoad);
+				loader.hide();
+			}
+
+			$doc.bind("ch-status", setStatus);
+			$doc.bind("ch-data", endLoad);
+		}
+
+		this.initLoader();
+	}
+
+
+
+
+	/*  */
+
+	function Controller(model, view) {
+		(function recurs() {
+			model.update();
+			setTimeout(recurs, 3*60*1000);
+		}());
+		$doc.bind("ch-data", function () {
+			$.each(model.getAirlines(), function (key, val) {
+				view.tabs.append("<li data-code='"+key+"'>"+val+"</li>");
+			} )
+		} );
+
+		view.tabs.on("click", "li:not(.active)", function () {
+			$(this)
+				.addClass("active")
+				.siblings(".active")
+				.removeClass("active");
+		} );
+	}
+
+	$( function () {
+		var model = new Model();
+		var view = new View(model);
+		new Controller(model, view);
+	} );
+
+	</script>
+	<style type="text/css">
+		*{
+			list-style-type: none;
+			margin: 0;
+			padding: 0;
+			font-size: 14px;
+			line-height: 1.4;
+			color: #333;
+			font-family: arial, sans-serif;
+		}
+
+		html, body{
+			height: 100%;
+		}
+
+		html{
+			background: #E0E0E0;
+		}
+
+		#container{
+			position: relative;
+			background: #FFF;
+			min-height: 200px;
+		}
+
+		#container:after{
+			content: " ";
+			display: block;
+			clear: both;
+		}
+
+		#container #left{
+			width: 200px;
+			float: left;
+		}
+
+		#container #middle{
+			width: 20%;
+			float: left;
+		}
+
+		#container #wrap{
+			margin-left: 20%;
+		}
+
+		#container #right{
+			margin-left: 200px;
+		}
+
+		#container #middle,
+		#container #right{
+			background: #FFF;
+		}
+
+		#loader{
+			display: block;
+			position: absolute;
+			background: #FFF;
+			height: 100%;
+			width: 100%;
+		}
+
+		#loader .wrap{
+			position: absolute;
+		    top: 0;
+		    bottom: 0;
+		    left: 0;
+		    right: 0;
+		    width: 300px;
+		    padding: 5px;
+		    height: 15px;
+		    border: 1px solid #A9A9A9;
+		    margin: auto;
+		}
+
+		#loader .load{
+			background: #DADADA;
+			width: 0%;
+			height: 100%;
+			transition-timing-function: linear;
+			-webkit-transition-duration: 1s;
+		    -o-transition-duration: 1s;
+		    -moz-transition-duration: 1s;
+		    transition-duration: 1s;
+		}
+
+		#tabs h1{
+			padding: 15px;
+			text-align: right;
+		    font-weight: normal;
+		    color: #969696;
+		    font-size: 25px;
+		}
+
+		#tabs{
+			border-right: 4px solid #E8E8E8;
+		}
+
+		ul#tabs-item{
+			height: 100%;
+			display: block;
+			overflow: hidden;
+		}
+
+		ul#tabs-item li{
+			padding: 15px;
+			display: block;
+			cursor: pointer;
+			text-align: right;
+		}
+
+		ul#tabs-item li.active{
+			background: #E8E8E8;
+			cursor: default;
+			position: relative;
+		}
+
+	</style>
+</head>
+<body>
+<div id="container">
+	<div id="loader"></div>
+	<div id="left">
+		<div id="tabs">
+			<h1>Airlines:</h1>
+			<ul id="tabs-item"></ul>
+		</div>
+	</div>
+	<div id="middle"></div>
+	<div id="wrap">
+		<div id="right"></div>
+	</div>
+</div>
+</body>
+</html>

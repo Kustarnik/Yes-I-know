@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Книги</title>
+	<meta charset="utf8">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" type="text/css" href="style.css">
+	<script src="jquery-1.11.3.min.js"></script>
+	<script src="jquery.tmpl.js"></script>
+	<script src="script.js"></script>
+	<script id="movieTmpl" type="text/x-jquery-tmpl">
+		<li data-id="${id}">
+			<h1 class="title">${param.title}</h1>
+			<p class="author">${param.author}</p>
+			<a href="#" class="button edit">Изменить</a>
+			<a href="#" class="button del">Удалить</a>
+		</li>
+	</script>
+</head>
+<body>
+<div id="container">
+	<div id="left">
+		<div class="form">
+			<div class="item">
+				<label for="title">Название книги</label>
+				<div class="fields">
+					<input type="text" id="title">
+					<p class="error"></p>
+				</div>
+			</div>
+			<div class="item">
+				<label for="author">Автор</label>
+				<div class="fields">
+					<input type="text" id="author">
+					<p class="error"></p>
+				</div>
+			</div>
+			<div class="item">
+				<label for="year">Год издания</label>
+				<div class="fields">
+					<input type="text" id="year">
+					<p class="error"></p>
+				</div>
+			</div>
+			<div class="item">
+				<label for="pages">К-во страниц</label>
+				<div class="fields">
+					<input type="text" id="pages">
+					<p class="error"></p>
+				</div>
+			</div>
+			<div class="item">
+				<div class="fields">
+					<button id="save">Сохранить</button>
+					<button id="cancel" style="display:none">Oтменить</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div id="right">
+		<ul class="books"></ul>
+	</div>
+</div>
+
+</body>
+</html>

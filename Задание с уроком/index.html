@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Урок сложения</title>
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<style type="text/css">
+	
+		@font-face {
+		    font-family: 'PTSansCaption';
+		    src: url('ptc55f.eot');
+		    src: url('ptc55f.eot?#iefix') format('embedded-opentype'),
+		         url('ptc55f.woff') format('woff'),
+		         url('ptc55f.ttf') format('truetype');
+		    font-weight: normal;
+		    font-style: normal;
+		}
+
+		*{
+			font-family: 'PTSansCaption', sans-serif;
+			font-size: 35px;
+			color: #444;
+		}
+
+		input{
+			border: 3px solid #DDD;
+			-moz-border-radius: 5px;
+			-webkit-border-radius: 5px;
+			-khtml-border-radius: 5px;
+			border-radius: 7px;
+			outline: none;
+			line-height: normal;
+			padding: 0;
+			width: 50px;
+		}
+
+		span.wrong{
+			background: #F4A460;
+			-moz-border-radius: 5px;
+			-webkit-border-radius: 5px;
+			-khtml-border-radius: 5px;
+			border-radius: 5px;
+		}
+
+		#space{
+			width: 875px;
+			margin: 0 auto;
+		}
+
+		#space #axis{
+			margin: 0 0 -40px 34px;
+			position: relative;
+			font-size: 0;
+		}
+
+		#space #axis input,
+		#space #axis span{
+			position: absolute;
+			display: block;
+			width:30px;
+			text-align: center;
+			margin-left: -15px;
+			font-size: 25px;
+		}
+
+		#space #axis span{
+			padding: 3px;
+		}
+
+		#space #equation{
+			font-size: 0;
+			display: table;
+			line-height: 60px;
+			width: 180px;
+			margin: 0 auto;
+		}
+
+		#space #equation span,
+		#space #equation input{
+			line-height: 1;
+			display: inline-block;
+			vertical-align: middle;
+		}
+
+		#space #equation span{
+			border-radius: 5px;
+			padding: 0 3px;
+		}
+
+	</style>
+</head>
+<body>
+	<div id="space">
+		<div id="equation">
+			<span id="a"></span>
+			<span>+</span>
+			<span id="b"></span>
+			<span>=</span>
+			<span id="c">?</span>
+		</div>
+		<div id="axis">
+			<svg width="100%" height="200">
+				<defs>
+					<symbol id="arrow" viewBox="-20 -20 820 240" preserveAspectRatio="xMinYMax meet">
+						<g transform="translate(0,-852.36218)">
+							<path
+								style="fill:none;stroke:#D67777;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none"
+								d="M 2.08954,1050.3183 C 143.7987,786.96841 652.67503,808.12232 774.57427,1048.8906 m -33.51282,-14.5787 33.75524,14.6473 3.09543,-37.0193"/>
+						</g>
+				    </symbol>
+			    </defs>
+			</svg>
+		</div>
+		<img src="sprite.png">
+	</div>
+	
+	<script type="text/javascript">
+		var AXIS = document.getElementById("axis");
+		var A = document.getElementById("a");
+		var B = document.getElementById("b");
+		var C = document.getElementById("c");
+		var VAL_A = Math.round(3*Math.random() + 6);
+		var VAL_C = Math.round(3*Math.random() + 11);
+		var VAL_B = VAL_C - VAL_A;
+		var WRONG_SPAN_COLOR = "#F4A460";
+		var WRONG_INPUT_COLOR = "#CE4844"; 
+		A.innerHTML = VAL_A;
+		B.innerHTML = VAL_B;
+
+		var addArrow = ( function() {
+			var x_0 = 1;
+			return function(correctNum, callBack) {
+				var use = document.createElementNS("http://www.w3.org/2000/svg", "use");
+				var input = getInput(correctNum, callBack);
+				var	width = correctNum * 39;
+				var k = width / 780;
+				use.setAttributeNS(
+					'http://www.w3.org/1999/xlink',
+			        'href',                         
+			        '#arrow'
+			    );
+			    use.setAttribute('x', x_0 - 20 * k);
+			    use.setAttribute('y', -20 + 20 * k);
+			    input.style.left = x_0 + (width / 2) + "px";
+			    input.style.bottom = k * 200 + 30 + "px";
+			    x_0 += width;
+			    use.setAttribute('width', width + 45 * k);
+			    use.setAttribute('stroke-width', 2 / k);
+			    AXIS.getElementsByTagName("svg")[0].appendChild(use);
+			    AXIS.appendChild(input);
+
+			}
+		} )();
+
+
+		addArrow(VAL_A, function(isCorr) {
+			
+			if (isCorr) {
+				A.style.backgroundColor = "";
+				addArrow(VAL_B, function(isCorr) {
+
+					if (isCorr) {
+						B.style.backgroundColor = "";
+						C.parentNode.replaceChild( getInput(VAL_C, function(isCorr) {
+							
+							if (isCorr) {
+								alert("Правильно!");
+							}
+
+						}) , C);
+					} else {
+						B.style.backgroundColor = WRONG_SPAN_COLOR;
+					};
+
+				} );
+			} else {
+				A.style.backgroundColor = WRONG_SPAN_COLOR;
+			};
+
+		} );
+		
+		function getInput(correctNum, callBack) {
+			var input = document.createElement("input");
+			input.onblur = function() {
+
+				if (this.value) {
+					var isCorrect = this.value == correctNum; 
+					
+					if (isCorrect) {
+						var span = document.createElement("span");
+						span.innerHTML = correctNum;
+						["left","bottom"].forEach( function(v) {
+							span.style[v] = input.style[v];
+						} )
+						this.parentNode.replaceChild(span, this);
+					} else {
+						this.style.color = WRONG_INPUT_COLOR;
+					};
+
+					if (callBack) {
+						callBack(isCorrect);
+					};
+
+				};
+
+			}
+
+			input.onkeypress = function() {
+				this.style.color = "";
+				setTimeout( function() {
+					var val = parseInt(input.value);
+					input.value = isNaN(val) ? "" : val;
+				}, 0);
+			}
+			return input;
+		}	
+	</script>
+</body>
+</html>

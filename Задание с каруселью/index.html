@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    
+    <link type="text/css" rel="stylesheet" href="layout.css" />
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <script type="text/javascript">
+    	$(function(){
+
+			var X = 0,
+				number = 0,
+				Widths = [],
+				$parent = $("#parent").css({
+					position: "relative",
+					right:"50%"
+				}),
+				$slide = $parent.find("#slide").css({
+					position: "relative"
+
+				}),
+				$images = $slide.find("img").each(function(i, el){
+					Widths.push($(this).css({
+						position: "absolute",
+						top: ($parent.height() - $(this).outerHeight())/2,
+						right: X
+					}).outerWidth());
+
+					X += $(this).outerWidth() + 50; 
+				}); 
+
+			function getRight(n){
+				var right = 0;
+				for(var i = 0; i < n; i++){
+					right -= Widths[i] + 50;
+				}
+				return right -= Widths[n]/2;
+				
+			}
+
+			$slide.css("right", getRight(number++));
+
+			$("#solution").on("click", "#btn-right", function(){
+				number = (number < Widths.length)?number:0;
+				$slide.animate({
+					right: getRight(number++)
+				});
+			})
+
+			
+			
+		})
+    </script>
+    <style type="text/css">
+    	#solution{
+    		margin-top:300px;
+    		overflow: hidden;
+    		background: #000;
+    		position: relative;
+    	}
+
+    	#solution #slide{
+    		height: 600px;
+    	}
+
+    	#solution img{
+    		background: #FFF;
+    		padding: 20px 30px;
+    	}
+
+    	#btn-right{
+    		position:absolute; 
+    		top: 280px; 
+    		right:50px;
+    		border-right: 40px solid rgba(0,0,0,0);
+    		border-top: 40px solid rgba(0,0,0,0);
+    		border-bottom: 40px solid rgba(0,0,0,0);
+    		border-left: 40px solid #F00;
+    	}
+
+    </style>
+</head>
+<body>
+	<div class="to-do">Сделать карусель из картинок, согласно <a href="test3.png" target="_blank">приложенному изображению</a>. Количество элементов - от 1 до 10, предусмотреть корректное отображение любого количества. Ширина одного элемента известна, предусмотреть её лёгкое изменение.</div>
+	<div id="solution">
+		<div id="parent">
+			<div id="slide">
+				<img src="2.jpg">
+				<img src="1.jpg">
+				<img src="2.jpg">
+				<img src="4.jpg">
+				<img src="5.jpg">
+			</div>
+		</div>
+		<div id="btn-right"></div>
+	</div>
+</body>
+</html>
